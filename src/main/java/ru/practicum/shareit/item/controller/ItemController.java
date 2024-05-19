@@ -35,7 +35,7 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     public ItemDto getItem(@RequestHeader("X-Sharer-User-Id") Long userId,
-                           @PathVariable Long itemId) throws AccessDeniedException, NotFoundException {
+                                     @PathVariable Long itemId) throws AccessDeniedException, NotFoundException {
         return itemService.getItem(userId,itemId);
     }
 

@@ -11,6 +11,7 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Repository
@@ -28,24 +29,24 @@ public class ItemRepositoryImpl implements ItemRepository {
     }
 
     @Override
-    public Item finById(Long itemId) throws NotFoundException {
+    public Optional<Item> findById(Long itemId) throws NotFoundException {
         if (items.containsKey(itemId)) {
-            return items.get(itemId);
-        } else throw new NotFoundException("Id " + itemId + " не найден");
+            return Optional.ofNullable(items.get(itemId));
+        } else return Optional.empty();
     }
 
     @Override
     public ItemDto updateItem(Item item, Long itemId) throws NotFoundException {
-        if (items.containsKey(itemId)) {
+        if (findById(itemId).isPresent()) {
             Item updatedItem = items.get(itemId);
             if (item.getName() != null) {
-                items.get(itemId).setName(item.getName());
+                updatedItem.setName(item.getName());
             }
             if (item.getDescription() != null) {
-                items.get(itemId).setDescription(item.getDescription());
+                updatedItem.setDescription(item.getDescription());
             }
             if (item.getIsAvailable() != null) {
-                items.get(itemId).setIsAvailable(item.getIsAvailable());
+                updatedItem.setIsAvailable(item.getIsAvailable());
             }
             return ItemMapper.toItemDto(updatedItem);
         } else throw new NotFoundException("Id " + itemId + " не найден");

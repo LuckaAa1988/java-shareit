@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<UserDto> getUser(Long userId) {
-        return userRepository.finById(userId);
+        return userRepository.findById(userId);
     }
 
     @Override

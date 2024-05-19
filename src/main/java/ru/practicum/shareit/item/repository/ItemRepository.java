@@ -5,11 +5,12 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ItemRepository {
     ItemDto createItem(Item item);
 
-    Item finById(Long itemId) throws NotFoundException;
+    Optional<Item> findById(Long itemId) throws NotFoundException;
 
     ItemDto updateItem(Item item, Long itemId) throws NotFoundException;
 

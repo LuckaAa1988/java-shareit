@@ -12,7 +12,7 @@ import java.util.Optional;
 public interface UserRepository {
     UserDto createUser(User user) throws EmailException;
 
-    Optional<UserDto> finById(Long userId);
+    Optional<UserDto> findById(Long userId);
 
     UserDto updateUser(Long userId, UserDto userDto) throws UpdateException, EmailException;
 
