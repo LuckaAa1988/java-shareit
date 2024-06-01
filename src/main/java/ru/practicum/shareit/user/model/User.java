@@ -1,23 +1,24 @@
 package ru.practicum.shareit.user.model;
 
-import lombok.Builder;
-import lombok.Data;
-import org.hibernate.validator.constraints.UniqueElements;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
+import javax.persistence.*;
 
-/**
- * TODO Sprint add-controllers.
- */
-@Data
+@Entity
+@Getter
+@Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "users")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
-    private Long id;
-    @NotNull
-    private String name;
-    @Email
-    @NotNull
-    @UniqueElements
-    private String email;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+    @Column(name = "name")
+    String name;
+    @Column(name = "email", unique = true)
+    String email;
 }
