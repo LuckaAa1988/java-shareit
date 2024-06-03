@@ -1,20 +1,19 @@
 package ru.practicum.shareit.user.service;
 
-import ru.practicum.shareit.exception.model.UpdateException;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.exception.model.EmailException;
+import ru.practicum.shareit.exception.model.NotFoundException;
+import ru.practicum.shareit.user.dto.UserRequest;
+import ru.practicum.shareit.user.dto.UserResponse;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface UserService {
-    Optional<UserDto> getUser(Long userId);
+    UserResponse getUser(Long userId) throws NotFoundException;
 
-    UserDto createUser(UserDto userDto) throws EmailException;
+    UserResponse createUser(UserRequest userRequest) throws NotFoundException;
 
-    UserDto updateUser(Long userId, UserDto userDto) throws UpdateException, EmailException;
+    UserResponse updateUser(Long userId, UserRequest userRequest) throws NotFoundException;
 
     boolean deleteUser(Long userId);
 
-    List<UserDto> getAllUsers();
+    List<UserResponse> findAll();
 }

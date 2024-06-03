@@ -1,27 +1,23 @@
 package ru.practicum.shareit.item.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
-@Builder
-public class ItemDto {
-    private Long id;
-    private Long userId;
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class ItemCreate {
     @NotNull
     @NotEmpty
-    private String name;
+    String name;
     @NotNull
     @NotEmpty
-    private String description;
+    String description;
     @NotNull
     @JsonProperty("available")
-    private Boolean isAvailable;
+    Boolean isAvailable;
 }

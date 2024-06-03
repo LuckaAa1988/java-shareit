@@ -1,28 +1,30 @@
 package ru.practicum.shareit.item.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import ru.practicum.shareit.user.model.User;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+import javax.persistence.*;
 
-/**
- * TODO Sprint add-controllers.
- */
-
-@Data
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@Table(name = "items")
 public class Item {
-    private Long id;
-    private Long userId;
-    @NotNull
-    @NotEmpty
-    private String name;
-    @NotNull
-    @NotEmpty
-    private String description;
-    @NotNull
-    @JsonProperty("available")
-    private Boolean isAvailable;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    User user;
+    @Column(name = "name")
+    String name;
+    @Column(name = "description")
+    String description;
+    @Column(name = "is_available")
+    Boolean isAvailable;
 }

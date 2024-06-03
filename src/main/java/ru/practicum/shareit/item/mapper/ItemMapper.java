@@ -1,26 +1,30 @@
 package ru.practicum.shareit.item.mapper;
 
-import ru.practicum.shareit.item.dto.ItemDto;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.factory.Mappers;
+import ru.practicum.shareit.item.dto.CommentResponse;
+import ru.practicum.shareit.item.dto.ItemBookingResponse;
+import ru.practicum.shareit.item.dto.ItemCreate;
+import ru.practicum.shareit.item.dto.ItemResponse;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
-public class ItemMapper {
+import java.util.List;
 
-    public static ItemDto toItemDto(Item item) {
-        return ItemDto.builder()
-                .id(item.getId())
-                .name(item.getName())
-                .description(item.getDescription())
-                .isAvailable(item.getIsAvailable())
-                .build();
-    }
+@Mapper
+public interface ItemMapper {
+    ItemMapper INSTANCE = Mappers.getMapper(ItemMapper.class);
 
-    public static Item toItem(ItemDto itemDto, Long userId) {
-        return Item.builder()
-                .id(itemDto.getId())
-                .userId(userId)
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .isAvailable(itemDto.getIsAvailable())
-                .build();
-    }
+    ItemResponse toDto(Item item);
+
+    @Mapping(target = "id", expression = "java(item.getId())")
+    @Mapping(target = "userId", expression = "java(item.getUser().getId())")
+    ItemResponse toDtoWithBooking(
+            Item item, ItemBookingResponse nextBooking,
+            ItemBookingResponse lastBooking, List<CommentResponse> comments);
+
+    @Mapping(target = "name", expression = "java(itemCreate.getName())")
+    @Mapping(target = "user", source = "user")
+    Item fromDto(ItemCreate itemCreate, User user);
 }

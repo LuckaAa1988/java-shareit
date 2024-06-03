@@ -2,18 +2,14 @@ package ru.practicum.shareit.user.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.exception.model.UpdateException;
-import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.exception.model.EmailException;
+import ru.practicum.shareit.exception.model.NotFoundException;
+import ru.practicum.shareit.user.dto.UserRequest;
+import ru.practicum.shareit.user.dto.UserResponse;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
@@ -22,19 +18,19 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{userId}")
-    public Optional<UserDto> getUserById(@PathVariable Long userId) {
+    public UserResponse getUserById(@PathVariable Long userId) throws NotFoundException {
         return userService.getUser(userId);
     }
 
     @PostMapping
-    public UserDto createUser(@RequestBody @Valid UserDto userDto) throws EmailException {
-        return userService.createUser(userDto);
+    public UserResponse createUser(@RequestBody @Valid UserRequest userRequest) throws NotFoundException {
+        return userService.createUser(userRequest);
     }
 
     @PatchMapping("/{userId}")
-    public UserDto updateUser(@PathVariable Long userId,
-                              @RequestBody UserDto userDto) throws UpdateException, EmailException {
-        return userService.updateUser(userId, userDto);
+    public UserResponse updateUser(@PathVariable Long userId,
+                              @RequestBody UserRequest userRequest) throws NotFoundException {
+        return userService.updateUser(userId, userRequest);
     }
 
     @DeleteMapping("/{userId}")
@@ -43,7 +39,7 @@ public class UserController {
     }
 
     @GetMapping
-    public List<UserDto> getAllUsers() {
-        return userService.getAllUsers();
+    public List<UserResponse> getAllUsers() {
+        return userService.findAll();
     }
 }
