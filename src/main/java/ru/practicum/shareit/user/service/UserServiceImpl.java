@@ -23,7 +23,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse getUser(Long userId) throws NotFoundException {
-        log.info("Получен запрос на получение User по id: {}", userId);
+        log.info("Получение User по id: {}", userId);
         var user = userRepository.findById(userId);
         return UserMapper.INSTANCE.toDto(user.orElseThrow(
                 () -> new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId))));
@@ -31,14 +31,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse createUser(UserRequest userRequest) {
-        log.info("Получен запрос на создание нового User с именем: {}", userRequest.getName());
+        log.info("Создание нового User с именем: {}", userRequest.getName());
         var user = userRepository.saveAndFlush(UserMapper.INSTANCE.fromDto(userRequest));
         return UserMapper.INSTANCE.toDto(user);
     }
 
     @Override
     public UserResponse updateUser(Long userId, UserRequest userRequest) throws NotFoundException {
-        log.info("Получен запрос на обновление User с id: {}", userId);
+        log.info("Обновление User с id: {}", userId);
         var user = userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId)));
         if (userRequest.getEmail() != null) {
@@ -54,13 +54,13 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public boolean deleteUser(Long userId) {
-        log.info("Получен запрос на удаление User с id: {}", userId);
+        log.info("Удаление User с id: {}", userId);
         return userRepository.deleteUserById(userId) > 0;
     }
 
     @Override
     public List<UserResponse> findAll() {
-        log.info("Получен запрос на получение списка всех User");
+        log.info("Получение списка всех User");
         return userRepository.findAll().stream()
                 .map(UserMapper.INSTANCE::toDto)
                 .collect(Collectors.toList());

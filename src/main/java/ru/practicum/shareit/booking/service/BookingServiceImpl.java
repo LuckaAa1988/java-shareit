@@ -38,7 +38,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingResponse addBooking(BookingRequest bookingRequest, Long bookerId)
             throws NotFoundException, ItemException {
-        log.info("Получен запрос на бронирование Item с id {} от USER c id {}",
+        log.info("Бронирование Item с id {} от USER c id {}",
                 bookingRequest.getItemId(), bookerId);
         if (notExists(bookerId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, bookerId));
@@ -58,7 +58,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingResponse getBooking(Long userId, Long bookingId) throws NotFoundException {
-        log.info("Получен запрос на просмотр бронирования с id {} от USER c id {}", bookingId, userId);
+        log.info("Просмотр бронирования с id {} от USER c id {}", bookingId, userId);
         var booking = bookingRepository.findById(bookingId).orElseThrow(
                 () -> new NotFoundException(String.format(Constants.BOOKING_NOT_FOUND, bookingId)));
         var itemUserId = booking.getItem().getUser().getId();
@@ -72,7 +72,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public BookingResponse updateBookingStatus(Long userId, Long bookingId, Boolean approved)
             throws NotFoundException, StateException {
-        log.info("Получен запрос от USER c id {} по броинированию с id {} со статусом {}",
+        log.info("USER c id {} обновляет броинирование с id {} со статусом {}",
                 userId, bookingId, approved);
         var booking = getBooking(userId, bookingId);
         var item = getItem(booking.getItem().getBookingItemId());
@@ -95,7 +95,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingResponse> getAllUserBookings(Long userId, String state)
             throws NotFoundException, StateException {
-        log.info("Получен запрос на просмотр всех бронирований USER c id {}, с параметром {}",
+        log.info("Просмотр всех бронирований USER c id {}, с параметром {}",
                 userId, state);
         if (notExists(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
@@ -113,7 +113,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingResponse> getAllOwnerBookings(Long userId, String state)
             throws NotFoundException, StateException {
-        log.info("Получен запрос на просмотр всех бронирований USER c id {}, с параметром {}",
+        log.info("Просмотр всех бронирований USER c id {}, с параметром {}",
                 userId, state);
         if (notExists(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));

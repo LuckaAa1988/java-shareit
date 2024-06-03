@@ -36,7 +36,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponse createItem(ItemCreate itemCreate, Long userId) throws NotFoundException {
-        log.info("Получен запрос на создание новой Item с именем {} от USER с id: {}", itemCreate.getName(), userId);
+        log.info("Создание новой Item с именем {} от USER с id: {}", itemCreate.getName(), userId);
         if (notExist(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
         }
@@ -49,7 +49,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemResponse updateItem(ItemCreate itemCreate,
                                    Long userId,
                                    Long itemId) throws NotFoundException, AccessDeniedException {
-        log.info("Получен запрос на обновление Item с id {} от USER с id: {}", itemId, userId);
+        log.info("Обновление Item с id {} от USER с id: {}", itemId, userId);
         var item = itemRepository.findById(itemId).orElseThrow(
                 () -> new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId)));
         if (!item.getUser().getId().equals(userId)) {
@@ -71,7 +71,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemResponse getItem(Long userId, Long itemId) throws NotFoundException {
-        log.info("Получен запрос на получение Item с id {} от USER с id: {}", itemId, userId);
+        log.info("Получение Item с id {} от USER с id: {}", itemId, userId);
         var item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new NotFoundException(String.format(Constants.ITEM_NOT_FOUND, itemId)));
         ItemBookingResponse nextBookingResponse = null;
@@ -89,7 +89,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemResponse> getAllItems(Long userId) throws NotFoundException {
-        log.info("Получен запрос на получение списка всех Item от USER с id: {}", userId);
+        log.info("Получение списка всех Item от USER с id: {}", userId);
         if (notExist(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
         }
@@ -126,8 +126,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemResponse> searchItems(String text, Long userId) throws NotFoundException {
-        log.info("Получен запрос на получение списка всех доступных Item " +
-                        "содержащих текст \"{}\" в названии от USER с id: {}", text, userId);
+        log.info("Получение списка всех доступных Item содержащих текст {} в названии от USER с id: {}", text, userId);
         if (notExist(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
         }
@@ -142,7 +141,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public CommentResponse addComment(CommentRequest commentRequest, Long userId, Long itemId)
             throws NotFoundException, ItemException {
-        log.info("Получен запрос на создание нового Comment к Item с id {} от USER с id: {}", itemId, userId);
+        log.info("Создание нового Comment к Item с id {} от USER с id: {}", itemId, userId);
         if (notExist(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
         }
