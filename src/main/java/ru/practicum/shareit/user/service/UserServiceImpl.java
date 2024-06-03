@@ -1,7 +1,9 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.util.Constants;
 import ru.practicum.shareit.exception.model.NotFoundException;
 import ru.practicum.shareit.user.dto.UserRequest;
@@ -14,12 +16,14 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
     @Override
     public UserResponse getUser(Long userId) throws NotFoundException {
+        log.info("Получен запрос на получение User по id: {}", userId);
         var user = userRepository.findById(userId);
         return UserMapper.INSTANCE.toDto(user.orElseThrow(
                 () -> new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId))));
@@ -27,12 +31,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponse createUser(UserRequest userRequest) {
-            var user = userRepository.saveAndFlush(UserMapper.INSTANCE.fromDto(userRequest));
-            return UserMapper.INSTANCE.toDto(user);
+        log.info("Получен запрос на создание нового User с именем: {}", userRequest.getName());
+        var user = userRepository.saveAndFlush(UserMapper.INSTANCE.fromDto(userRequest));
+        return UserMapper.INSTANCE.toDto(user);
     }
 
     @Override
     public UserResponse updateUser(Long userId, UserRequest userRequest) throws NotFoundException {
+        log.info("Получен запрос на обновление User с id: {}", userId);
         var user = userRepository.findById(userId).orElseThrow(
                 () -> new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId)));
         if (userRequest.getEmail() != null) {
@@ -46,13 +52,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public boolean deleteUser(Long userId) {
-        userRepository.deleteById(userId);
-        return !userRepository.existsById(userId);
+        log.info("Получен запрос на удаление User с id: {}", userId);
+        return userRepository.deleteUserById(userId) > 0;
     }
 
     @Override
     public List<UserResponse> findAll() {
+        log.info("Получен запрос на получение списка всех User");
         return userRepository.findAll().stream()
                 .map(UserMapper.INSTANCE::toDto)
                 .collect(Collectors.toList());

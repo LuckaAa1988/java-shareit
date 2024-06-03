@@ -14,39 +14,33 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/users")
 @RequiredArgsConstructor
-@Slf4j
 public class UserController {
 
     private final UserService userService;
 
     @GetMapping("/{userId}")
     public UserResponse getUserById(@PathVariable Long userId) throws NotFoundException {
-        log.info("Получен GET запрос на получение User по id: {}", userId);
         return userService.getUser(userId);
     }
 
     @PostMapping
     public UserResponse createUser(@RequestBody @Valid UserRequest userRequest) throws NotFoundException {
-        log.info("Получен POST запрос на создание нового User с именем: {}", userRequest.getName());
         return userService.createUser(userRequest);
     }
 
     @PatchMapping("/{userId}")
     public UserResponse updateUser(@PathVariable Long userId,
                               @RequestBody UserRequest userRequest) throws NotFoundException {
-        log.info("Получен PATCH запрос на обновление User с id: {}", userId);
         return userService.updateUser(userId, userRequest);
     }
 
     @DeleteMapping("/{userId}")
     public boolean deleteUserById(@PathVariable Long userId) {
-        log.info("Получен DELETE запрос на удаление User с id: {}", userId);
         return userService.deleteUser(userId);
     }
 
     @GetMapping
     public List<UserResponse> getAllUsers() {
-        log.info("Получен GET запрос на получение списка всех User");
         return userService.findAll();
     }
 }
