@@ -19,4 +19,5 @@ public class ItemResponse {
     ItemBookingResponse lastBooking;
     ItemBookingResponse nextBooking;
     List<CommentResponse> comments;
+    Long requestId;
 }

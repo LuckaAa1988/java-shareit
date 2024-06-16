@@ -16,6 +16,8 @@ import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.Collections;
@@ -33,6 +35,7 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Override
     public ItemResponse createItem(ItemCreate itemCreate, Long userId) throws NotFoundException {
@@ -41,8 +44,12 @@ public class ItemServiceImpl implements ItemService {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
         }
         var user = userRepository.findById(userId).get();
-        var item = itemRepository.saveAndFlush(ItemMapper.INSTANCE.fromDto(itemCreate, user));
-        return ItemMapper.INSTANCE.toDto(item);
+        ItemRequest itemRequest = null;
+        if (itemCreate.getRequestId() != null) {
+            itemRequest = itemRequestRepository.findById(itemCreate.getRequestId()).get();
+        }
+        var item = itemRepository.saveAndFlush(ItemMapper.INSTANCE.fromDto(itemCreate, user, itemRequest));
+        return ItemMapper.INSTANCE.toDtoWithBooking(item, null, null, null);
     }
 
     @Override
@@ -51,7 +58,7 @@ public class ItemServiceImpl implements ItemService {
                                    Long itemId) throws NotFoundException, AccessDeniedException {
         log.info("Обновление Item с id {} от USER с id: {}", itemId, userId);
         var item = itemRepository.findById(itemId).orElseThrow(
-                () -> new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId)));
+                () -> new NotFoundException(String.format(Constants.ITEM_NOT_FOUND, itemId)));
         if (!item.getUser().getId().equals(userId)) {
             throw new AccessDeniedException(
                     String.format("USER с id %s не может редактировать этот ITEM c id %s", userId, itemId));
@@ -88,7 +95,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemResponse> getAllItems(Long userId) throws NotFoundException {
+    public List<ItemResponse> getAllItems(Long userId, Integer from, Integer size) throws NotFoundException {
         log.info("Получение списка всех Item от USER с id: {}", userId);
         if (notExist(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
@@ -96,7 +103,7 @@ public class ItemServiceImpl implements ItemService {
         var comments = commentRepository.findAll();
         var bookingsAfter = bookingRepository.findAll(startDateIsAfter().and(orderByAsc()));
         var bookingsBefore = bookingRepository.findAll(startDateIsBefore());
-        return itemRepository.findAllByUserId(userId).stream()
+        return itemRepository.findAllByUserId(userId, from == null ? 0 : from, size == null ? Integer.MAX_VALUE : size).stream()
                 .map(i -> {
                     ItemBookingResponse nextBookingResponse = null;
                     if (!bookingsAfter.isEmpty()) {
@@ -125,7 +132,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemResponse> searchItems(String text, Long userId) throws NotFoundException {
+    public List<ItemResponse> searchItems(String text, Long userId, Integer from, Integer size) throws NotFoundException {
         log.info("Получение списка всех доступных Item содержащих текст {} в названии от USER с id: {}", text, userId);
         if (notExist(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));

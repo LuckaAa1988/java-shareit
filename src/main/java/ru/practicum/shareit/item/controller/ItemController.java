@@ -41,14 +41,18 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemResponse> getAllItems(@RequestHeader("X-Sharer-User-Id") Long userId) throws NotFoundException {
-        return itemService.getAllItems(userId);
+    public List<ItemResponse> getAllItems(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                          @RequestParam(required = false) Integer from,
+                                          @RequestParam(required = false) Integer size) throws NotFoundException {
+        return itemService.getAllItems(userId, from, size);
     }
 
     @GetMapping("/search")
     public List<ItemResponse> searchItems(@RequestParam String text,
-                                          @RequestHeader("X-Sharer-User-Id") Long userId) throws NotFoundException {
-        return itemService.searchItems(text, userId);
+                                          @RequestHeader("X-Sharer-User-Id") Long userId,
+                                          @RequestParam(required = false) Integer from,
+                                          @RequestParam(required = false) Integer size) throws NotFoundException {
+        return itemService.searchItems(text, userId, from, size);
     }
 
     @PostMapping("/{itemId}/comment")

@@ -29,7 +29,7 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public UserResponse updateUser(@PathVariable Long userId,
-                              @RequestBody UserRequest userRequest) throws NotFoundException {
+                                   @RequestBody UserRequest userRequest) throws NotFoundException {
         return userService.updateUser(userId, userRequest);
     }
 
@@ -39,7 +39,8 @@ public class UserController {
     }
 
     @GetMapping
-    public List<UserResponse> getAllUsers() {
-        return userService.findAll();
+    public List<UserResponse> getAllUsers(@RequestParam(required = false) Integer from,
+                                          @RequestParam(required = false) Integer size) {
+        return userService.findAll(from, size);
     }
 }
