@@ -107,7 +107,7 @@ class BookingServiceTest {
     }
 
     @Test
-    void TestGetAllOwnerBookings() throws NotFoundException, StateException {
+    void testGetAllOwnerBookings() throws NotFoundException, StateException {
         StateStrategy strategy = mock(StateStrategy.class);
         when(stateFactory.findStrategy(any(State.class))).thenReturn(strategy);
         when(strategy.findBookingsByItemIds(anyList(), anyInt(), anyInt())).thenReturn(List.of(booking));
