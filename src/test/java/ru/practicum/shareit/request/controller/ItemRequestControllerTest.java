@@ -206,7 +206,7 @@ class ItemRequestControllerTest {
     }
 
     @Test
-    void testCreateSuccessItemRequest() throws Exception{
+    void testCreateSuccessItemRequest() throws Exception {
         ItemRequestRequest itemRequestRequest = new ItemRequestRequest();
         itemRequestRequest.setDescription("i need spoon");
         ObjectMapper objectMapper = new ObjectMapper();
@@ -228,7 +228,7 @@ class ItemRequestControllerTest {
     }
 
     @Test
-    void testCreateNullDescriptionItemRequest() throws Exception{
+    void testCreateNullDescriptionItemRequest() throws Exception {
         ItemRequestRequest itemRequestRequest = new ItemRequestRequest();
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(itemRequestRequest);
