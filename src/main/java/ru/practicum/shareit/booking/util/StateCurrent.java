@@ -16,13 +16,17 @@ public class StateCurrent implements StateStrategy {
     private final BookingRepository bookingRepository;
 
     @Override
-    public List<Booking> findBookings(Long bookerId) {
-        return bookingRepository.findAll(byBookerId(bookerId).and(startDateIsBefore()).and(endDateIsAfter()));
+    public List<Booking> findBookings(Long bookerId, Integer from, Integer size) {
+        return bookingRepository.findAll(byBookerId(bookerId)
+                .and(startDateIsBefore())
+                .and(endDateIsAfter()));
     }
 
     @Override
-    public List<Booking> findBookingsByItemIds(List<Long> itemIds) {
-        return bookingRepository.findAll(byItemIds(itemIds).and(startDateIsBefore()).and(endDateIsAfter()));
+    public List<Booking> findBookingsByItemIds(List<Long> itemIds, Integer from, Integer size) {
+        return bookingRepository.findAll(byItemIds(itemIds)
+                .and(startDateIsBefore())
+                .and(endDateIsAfter()));
     }
 
     @Override

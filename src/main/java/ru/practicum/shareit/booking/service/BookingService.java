@@ -16,9 +16,9 @@ public interface BookingService {
     BookingResponse updateBookingStatus(Long userId, Long bookingId, Boolean approved)
             throws NotFoundException, ItemException, StateException;
 
-    List<BookingResponse> getAllUserBookings(Long userId, String state)
+    List<BookingResponse> getAllUserBookings(Long userId, String state, Integer from, Integer size)
             throws NotFoundException, ItemException, StateException;
 
-    List<BookingResponse> getAllOwnerBookings(Long userId, String state)
+    List<BookingResponse> getAllOwnerBookings(Long userId, String state, Integer from, Integer size)
             throws NotFoundException, ItemException, StateException;
 }

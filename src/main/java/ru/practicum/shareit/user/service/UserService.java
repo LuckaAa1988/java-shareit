@@ -15,5 +15,5 @@ public interface UserService {
 
     boolean deleteUser(Long userId);
 
-    List<UserResponse> findAll();
+    List<UserResponse> findAll(Integer from, Integer size);
 }

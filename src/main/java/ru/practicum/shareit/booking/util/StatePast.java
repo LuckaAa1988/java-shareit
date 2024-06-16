@@ -16,12 +16,12 @@ public class StatePast implements StateStrategy {
     private final BookingRepository bookingRepository;
 
     @Override
-    public List<Booking> findBookings(Long bookerId) {
+    public List<Booking> findBookings(Long bookerId, Integer from, Integer size) {
         return bookingRepository.findAll(byBookerId(bookerId).and(endDateIsBefore()));
     }
 
     @Override
-    public List<Booking> findBookingsByItemIds(List<Long> itemIds) {
+    public List<Booking> findBookingsByItemIds(List<Long> itemIds, Integer from, Integer size) {
         return bookingRepository.findAll(byItemIds(itemIds).and(endDateIsBefore()));
     }
 

@@ -16,12 +16,12 @@ public class StateWaiting implements StateStrategy {
     private final BookingRepository bookingRepository;
 
     @Override
-    public List<Booking> findBookings(Long bookerId) {
+    public List<Booking> findBookings(Long bookerId, Integer from, Integer size) {
         return bookingRepository.findAll(byBookerId(bookerId).and(byStatus(Status.WAITING)));
     }
 
     @Override
-    public List<Booking> findBookingsByItemIds(List<Long> itemIds) {
+    public List<Booking> findBookingsByItemIds(List<Long> itemIds, Integer from, Integer size) {
         return bookingRepository.findAll(byItemIds(itemIds).and(byStatus(Status.WAITING)));
     }
 

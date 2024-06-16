@@ -93,7 +93,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponse> getAllUserBookings(Long userId, String state)
+    public List<BookingResponse> getAllUserBookings(Long userId, String state, Integer from, Integer size)
             throws NotFoundException, StateException {
         log.info("Просмотр всех бронирований USER c id {}, с параметром {}",
                 userId, state);
@@ -103,7 +103,7 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookings;
         try {
             StateStrategy strategy = stateFactory.findStrategy(State.valueOf(state));
-            bookings = strategy.findBookings(userId);
+            bookings = strategy.findBookings(userId, from, size);
         } catch (IllegalArgumentException e) {
             throw new StateException("Unknown state: " + state);
         }
@@ -111,20 +111,20 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingResponse> getAllOwnerBookings(Long userId, String state)
+    public List<BookingResponse> getAllOwnerBookings(Long userId, String state, Integer from, Integer size)
             throws NotFoundException, StateException {
         log.info("Просмотр всех бронирований USER c id {}, с параметром {}",
                 userId, state);
         if (notExists(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
         }
-        var itemIds = itemRepository.findAllByUserId(userId).stream()
+        var itemIds = itemRepository.findAllByUserId(userId, 0, Integer.MAX_VALUE).stream()
                 .map(Item::getId)
                 .collect(Collectors.toList());
         List<Booking> bookings;
         try {
             StateStrategy strategy = stateFactory.findStrategy(State.valueOf(state));
-            bookings = strategy.findBookingsByItemIds(itemIds);
+            bookings = strategy.findBookingsByItemIds(itemIds, from, size);
         } catch (IllegalArgumentException e) {
             throw new StateException("Unknown state: " + state);
         }

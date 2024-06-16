@@ -59,9 +59,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> findAll() {
+    public List<UserResponse> findAll(Integer from, Integer size) {
         log.info("Получение списка всех User");
-        return userRepository.findAll().stream()
+        return userRepository.findAll(from == null ? 0 : from, size == null ? Integer.MAX_VALUE : size).stream()
                 .map(UserMapper.INSTANCE::toDto)
                 .collect(Collectors.toList());
     }

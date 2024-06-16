@@ -18,9 +18,9 @@ public interface ItemService {
 
     ItemResponse getItem(Long userId, Long itemId) throws NotFoundException;
 
-    List<ItemResponse> getAllItems(Long userId) throws NotFoundException;
+    List<ItemResponse> getAllItems(Long userId, Integer from, Integer size) throws NotFoundException;
 
-    List<ItemResponse> searchItems(String text, Long userId) throws NotFoundException;
+    List<ItemResponse> searchItems(String text, Long userId, Integer from, Integer size) throws NotFoundException;
 
     CommentResponse addComment(CommentRequest commentRequest, Long userId, Long itemId) throws NotFoundException, ItemException;
 }
