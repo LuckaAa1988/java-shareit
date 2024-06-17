@@ -39,6 +39,8 @@ class ItemRequestServiceTest {
 
     private User author;
     private ItemRequest itemRequest;
+
+    private ItemRequestRequest request;
     private Item item;
 
     @BeforeEach
@@ -47,13 +49,12 @@ class ItemRequestServiceTest {
         author = User.builder().id(1L).name("Author").email("author@example.com").build();
         itemRequest = ItemRequest.builder().id(1L).description("Need a ladder").author(author).build();
         item = Item.builder().id(1L).name("Ladder").description("A tall ladder").user(author).itemRequest(itemRequest).build();
+        request = new ItemRequestRequest();
+        request.setDescription("Need a ladder");
     }
 
     @Test
     void testAddRequestItem() throws NotFoundException {
-        ItemRequestRequest request = new ItemRequestRequest();
-        request.setDescription("Need a ladder");
-
         when(userRepository.findById(1L)).thenReturn(Optional.of(author));
         when(itemRequestRepository.save(any(ItemRequest.class))).thenAnswer(invocation -> {
             ItemRequest req = invocation.getArgument(0);
@@ -71,9 +72,6 @@ class ItemRequestServiceTest {
 
     @Test
     void testAddRequestItemUserNotFound() {
-        ItemRequestRequest request = new ItemRequestRequest();
-        request.setDescription("Need a ladder");
-
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         NotFoundException thrown = assertThrows(NotFoundException.class, () -> {
