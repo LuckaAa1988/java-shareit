@@ -183,6 +183,17 @@ class BookingServiceTest {
     }
 
     @Test
+    void testGetAllBookingsSize0() throws Exception {
+        StateStrategy strategy = mock(StateStrategy.class);
+        when(stateFactory.findStrategy(any(State.class))).thenReturn(strategy);
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(strategy.findBookings(1L, 0, 0)).thenThrow(new StateException("размер не может быть 0"));
+
+        StateException exception = assertThrows(StateException.class, () ->
+                bookingService.getAllUserBookings(1L, "ALL", 0, 0));
+    }
+
+    @Test
     void testUserNotFoundGetAllBookings() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.empty());
 
@@ -205,5 +216,36 @@ class BookingServiceTest {
         assertNotNull(responses);
         assertFalse(responses.isEmpty());
         assertEquals(1, responses.size());
+    }
+
+    @Test
+    void testUpdateBookingStatusApproved() throws Exception {
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+
+        BookingResponse response = bookingService.updateBookingStatus(1L, 1L, true);
+
+        assertEquals(Status.APPROVED, response.getStatus());
+    }
+
+    @Test
+    void testUpdateBookingStatusRejected() throws Exception {
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+
+        BookingResponse response = bookingService.updateBookingStatus(1L, 1L, false);
+
+        assertEquals(Status.REJECTED, response.getStatus());
+    }
+
+    @Test
+    void testUpdateBookingStatusItemNotFound() {
+        when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
+        when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
+
+        NotFoundException exception = assertThrows(NotFoundException.class, () ->
+                bookingService.updateBookingStatus(1L, 1L, true));
+
+        assertEquals("ITEM с id 1 не существует", exception.getMessage());
     }
 }
