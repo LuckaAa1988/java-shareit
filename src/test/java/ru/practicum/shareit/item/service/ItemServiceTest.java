@@ -33,6 +33,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
+import static ru.practicum.shareit.booking.repository.BookingSpecification.*;
 
 class ItemServiceTest {
 
@@ -59,6 +60,7 @@ class ItemServiceTest {
     private ItemCreate itemCreate2;
     private ItemCreate itemCreateWithRequest;
     private ItemRequest itemRequest;
+    private Booking bookingAfter;
 
     @BeforeEach
     void setUp() {
@@ -74,6 +76,13 @@ class ItemServiceTest {
                 .status(Status.APPROVED)
                 .startDate(LocalDateTime.now().minusDays(2))
                 .endDate(LocalDateTime.now().minusDays(1)).build();
+        bookingAfter = Booking.builder()
+                .item(item)
+                .booker(booker)
+                .id(2L)
+                .status(Status.APPROVED)
+                .startDate(LocalDateTime.now().plusDays(2))
+                .endDate(LocalDateTime.now().plusDays(3)).build();
         commentRequest = new CommentRequest();
         commentRequest.setText("new comment");
         commentRequest.setAuthorId(1L);
@@ -206,6 +215,26 @@ class ItemServiceTest {
         assertEquals(item.getId(), responses.get(0).getId());
         assertEquals(item.getName(), responses.get(0).getName());
         assertEquals(item.getDescription(), responses.get(0).getDescription());
+    }
+
+    @Test
+    void testGetAllItemsWithBookings() throws Exception {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(itemRepository.findAllByUserId(anyLong(), anyInt(), anyInt())).thenReturn(List.of(item));
+        when(bookingRepository.findAll(any(Specification.class))).thenReturn(List.of(bookingAfter));
+        when(bookingRepository.findAll(startDateIsBefore())).thenReturn(List.of(booking));
+
+
+        List<ItemResponse> responses = itemService.getAllItems(1L,0, 10);
+
+        assertNotNull(responses);
+        assertEquals(1, responses.size());
+        assertEquals(item.getId(), responses.get(0).getId());
+        assertEquals(item.getName(), responses.get(0).getName());
+        assertEquals(item.getDescription(), responses.get(0).getDescription());
+        assertEquals(booking.getId(), responses.get(0).getLastBooking().getId());
+        assertEquals(bookingAfter.getId(), responses.get(0).getNextBooking().getId());
+
     }
 
     @Test
