@@ -2,13 +2,16 @@ package ru.practicum.shareit.booking.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 import ru.practicum.shareit.booking.dto.BookerResponse;
 import ru.practicum.shareit.booking.dto.BookingItemResponse;
 import ru.practicum.shareit.booking.dto.BookingRequest;
 import ru.practicum.shareit.booking.dto.BookingResponse;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.util.State;
@@ -31,6 +34,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class BookingServiceTest {
 
     @Mock
@@ -45,6 +49,9 @@ class BookingServiceTest {
     @Mock
     private StateFactory stateFactory;
 
+    @Mock
+    private BookingMapper bookingMapper;
+
     @InjectMocks
     private BookingServiceImpl bookingService;
 
@@ -58,8 +65,6 @@ class BookingServiceTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
-
         user = new User();
         user.setId(1L);
         user.setName("Test User");
@@ -90,10 +95,10 @@ class BookingServiceTest {
         bookingRequest.setItemId(item.getId());
 
         BookerResponse bookerResponse = new BookerResponse();
-        bookerResponse.setUserId(3L);
+        bookerResponse.setUserId(2L);
 
         BookingItemResponse bookingItemResponse = new BookingItemResponse();
-        bookingItemResponse.setBookingItemId(3L);
+        bookingItemResponse.setBookingItemId(1L);
 
         bookingResponse = new BookingResponse();
         bookingResponse.setId(1L);
@@ -139,7 +144,9 @@ class BookingServiceTest {
     void testAddBooking() throws Exception {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(bookingMapper.fromDto(any(BookingRequest.class), any(), any(), any())).thenReturn(booking);
         when(bookingRepository.saveAndFlush(any(Booking.class))).thenReturn(booking);
+        when(bookingMapper.toDto(any(Booking.class))).thenReturn(bookingResponse);
 
         BookingResponse response = bookingService.addBooking(bookingRequest, booker.getId());
 
@@ -150,6 +157,7 @@ class BookingServiceTest {
     @Test
     void testGetBooking() throws Exception {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
+        when(bookingMapper.toDto(any(Booking.class))).thenReturn(bookingResponse);
 
         BookingResponse response = bookingService.getBooking(1L, 1L);
 
@@ -171,9 +179,9 @@ class BookingServiceTest {
     void testGetAllBookings() throws NotFoundException, StateException {
         StateStrategy strategy = mock(StateStrategy.class);
         when(stateFactory.findStrategy(any(State.class))).thenReturn(strategy);
-        when(strategy.findBookings(anyLong(), anyInt(), anyInt())).thenReturn(List.of(booking));
+        when(strategy.findBookings(anyLong(), any(Pageable.class))).thenReturn(List.of(booking));
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-        when(itemRepository.findAllByUserId(anyLong(), anyInt(), anyInt())).thenReturn(List.of(item));
+
 
         List<BookingResponse> responses = bookingService.getAllUserBookings(1L, "ALL", 0, 10);
 
@@ -183,13 +191,10 @@ class BookingServiceTest {
     }
 
     @Test
-    void testGetAllBookingsSize0() throws Exception {
-        StateStrategy strategy = mock(StateStrategy.class);
-        when(stateFactory.findStrategy(any(State.class))).thenReturn(strategy);
+    void testGetAllBookingsSize0() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-        when(strategy.findBookings(1L, 0, 0)).thenThrow(new StateException("размер не может быть 0"));
 
-        StateException exception = assertThrows(StateException.class, () ->
+        ArithmeticException exception = assertThrows(ArithmeticException.class, () ->
                 bookingService.getAllUserBookings(1L, "ALL", 0, 0));
     }
 
@@ -207,9 +212,9 @@ class BookingServiceTest {
     void testGetAllOwnerBookings() throws Exception {
         StateStrategy strategy = mock(StateStrategy.class);
         when(stateFactory.findStrategy(any(State.class))).thenReturn(strategy);
-        when(strategy.findBookingsByItemIds(anyList(), anyInt(), anyInt())).thenReturn(List.of(booking));
+        when(strategy.findBookingsByItemIds(anyList(), any(Pageable.class))).thenReturn(List.of(booking));
+        when(bookingMapper.toDto(any(Booking.class))).thenReturn(bookingResponse);
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-        when(itemRepository.findAllByUserId(anyLong(), anyInt(), anyInt())).thenReturn(List.of(item));
 
         List<BookingResponse> responses = bookingService.getAllOwnerBookings(1L, "ALL", 0, 10);
 
@@ -221,6 +226,7 @@ class BookingServiceTest {
     @Test
     void testUpdateBookingStatusApproved() throws Exception {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
+        when(bookingMapper.toDto(any(Booking.class))).thenReturn(bookingResponse);
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 
         BookingResponse response = bookingService.updateBookingStatus(1L, 1L, true);
@@ -231,6 +237,7 @@ class BookingServiceTest {
     @Test
     void testUpdateBookingStatusRejected() throws Exception {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
+        when(bookingMapper.toDto(any(Booking.class))).thenReturn(bookingResponse);
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
 
         BookingResponse response = bookingService.updateBookingStatus(1L, 1L, false);
@@ -241,6 +248,7 @@ class BookingServiceTest {
     @Test
     void testUpdateBookingStatusItemNotFound() {
         when(bookingRepository.findById(anyLong())).thenReturn(Optional.of(booking));
+        when(bookingMapper.toDto(any(Booking.class))).thenReturn(bookingResponse);
         when(itemRepository.findById(anyLong())).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class, () ->

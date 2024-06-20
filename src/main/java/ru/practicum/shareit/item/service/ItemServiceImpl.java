@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -36,6 +37,9 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final ItemRequestRepository itemRequestRepository;
+    private final ItemMapper itemMapper;
+    private final CommentMapper commentMapper;
+    private final BookingMapper bookingMapper;
 
     @Override
     public ItemResponse createItem(ItemCreate itemCreate, Long userId) throws NotFoundException {
@@ -48,8 +52,8 @@ public class ItemServiceImpl implements ItemService {
         if (itemCreate.getRequestId() != null) {
             itemRequest = itemRequestRepository.findById(itemCreate.getRequestId()).get();
         }
-        var item = itemRepository.saveAndFlush(ItemMapper.INSTANCE.fromDto(itemCreate, user, itemRequest));
-        return ItemMapper.INSTANCE.toDtoWithBooking(item, null, null, null);
+        var item = itemRepository.saveAndFlush(itemMapper.fromDto(itemCreate, user, itemRequest));
+        return itemMapper.toDtoWithBooking(item, null, null, null);
     }
 
     @Override
@@ -73,7 +77,7 @@ public class ItemServiceImpl implements ItemService {
             item.setIsAvailable(itemCreate.getIsAvailable());
         }
         itemRepository.saveAndFlush(item);
-        return ItemMapper.INSTANCE.toDto(item);
+        return itemMapper.toDto(item);
     }
 
     @Override
@@ -89,9 +93,9 @@ public class ItemServiceImpl implements ItemService {
         }
         var comments = commentRepository.findAllByItemId(itemId);
         var commentsResponse = comments.stream()
-                .map(CommentMapper.INSTANCE::toDto)
+                .map(commentMapper::toDto)
                 .collect(Collectors.toList());
-        return ItemMapper.INSTANCE.toDtoWithBooking(item, nextBookingResponse, lastBookingResponse, commentsResponse);
+        return itemMapper.toDtoWithBooking(item, nextBookingResponse, lastBookingResponse, commentsResponse);
     }
 
     @Override
@@ -100,17 +104,20 @@ public class ItemServiceImpl implements ItemService {
         if (notExist(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
         }
+        if (from < 0) throw new RuntimeException("from не может быть меньше 0");
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size);
         var comments = commentRepository.findAll();
         var bookingsAfter = bookingRepository.findAll(startDateIsAfter().and(orderByAsc()));
         var bookingsBefore = bookingRepository.findAll(startDateIsBefore());
-        return itemRepository.findAllByUserId(userId, from == null ? 0 : from, size == null ? Integer.MAX_VALUE : size).stream()
+        return itemRepository.findAllByUserId(userId, pageable).stream()
                 .map(i -> {
                     ItemBookingResponse nextBookingResponse = null;
                     if (!bookingsAfter.isEmpty()) {
                         nextBookingResponse = bookingsAfter.stream().filter(b ->
                                         b.getStatus().equals(Status.APPROVED)
                                                 && b.getItem().getId().equals(i.getId()))
-                                .map(BookingMapper.INSTANCE::toDtoItemBooking)
+                                .map(bookingMapper::toDtoItemBooking)
                                 .findFirst().orElse(null);
                     }
                     ItemBookingResponse lastBookingResponse = null;
@@ -118,14 +125,14 @@ public class ItemServiceImpl implements ItemService {
                         lastBookingResponse = bookingsBefore.stream().filter(b ->
                                         b.getStatus().equals(Status.APPROVED)
                                                 && b.getItem().getId().equals(i.getId()))
-                                .map(BookingMapper.INSTANCE::toDtoItemBooking)
+                                .map(bookingMapper::toDtoItemBooking)
                                 .findFirst().orElse(null);
                     }
                     var commentsResponse = comments.stream()
                             .filter(c -> c.getItem().getId().equals(i.getId()))
-                            .map(CommentMapper.INSTANCE::toDto)
+                            .map(commentMapper::toDto)
                             .collect(Collectors.toList());
-                    return ItemMapper.INSTANCE.toDtoWithBooking(
+                    return itemMapper.toDtoWithBooking(
                             i, nextBookingResponse, lastBookingResponse, commentsResponse);
                 })
                 .collect(Collectors.toList());
@@ -141,7 +148,7 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
         return itemRepository.searchItems(text.toLowerCase()).stream()
-                .map(ItemMapper.INSTANCE::toDto)
+                .map(itemMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -161,8 +168,8 @@ public class ItemServiceImpl implements ItemService {
         }
         var author = userRepository.findById(userId).get();
         var item = itemRepository.findById(itemId).get();
-        var comment = commentRepository.save(CommentMapper.INSTANCE.fromDto(commentRequest, author, item));
-        return CommentMapper.INSTANCE.toDto(comment);
+        var comment = commentRepository.save(commentMapper.fromDto(commentRequest, author, item));
+        return commentMapper.toDto(comment);
     }
 
     private boolean notExist(Long userId) {
@@ -177,7 +184,7 @@ public class ItemServiceImpl implements ItemService {
                         .and(orderByAsc()),
                 PageRequest.of(0, 1));
         if (!nextBooking.isEmpty()) {
-            nextBookingResponse = BookingMapper.INSTANCE.toDtoItemBooking(nextBooking.stream().findFirst().get());
+            nextBookingResponse = bookingMapper.toDtoItemBooking(nextBooking.stream().findFirst().get());
         }
         return nextBookingResponse;
     }
@@ -189,7 +196,7 @@ public class ItemServiceImpl implements ItemService {
                         .and(startDateIsBefore()),
                 PageRequest.of(0, 1));
         if (!lastBooking.isEmpty()) {
-            lastBookingResponse = BookingMapper.INSTANCE.toDtoItemBooking(lastBooking.stream().findFirst().get());
+            lastBookingResponse = bookingMapper.toDtoItemBooking(lastBooking.stream().findFirst().get());
         }
         return lastBookingResponse;
     }

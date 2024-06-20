@@ -2,6 +2,8 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.util.Constants;
@@ -20,20 +22,21 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Override
     public UserResponse getUser(Long userId) throws NotFoundException {
         log.info("Получение User по id: {}", userId);
         var user = userRepository.findById(userId);
-        return UserMapper.INSTANCE.toDto(user.orElseThrow(
+        return userMapper.toDto(user.orElseThrow(
                 () -> new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId))));
     }
 
     @Override
     public UserResponse createUser(UserRequest userRequest) {
         log.info("Создание нового User с именем: {}", userRequest.getName());
-        var user = userRepository.saveAndFlush(UserMapper.INSTANCE.fromDto(userRequest));
-        return UserMapper.INSTANCE.toDto(user);
+        var user = userRepository.saveAndFlush(userMapper.fromDto(userRequest));
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -48,7 +51,7 @@ public class UserServiceImpl implements UserService {
             user.setName(userRequest.getName());
         }
         userRepository.saveAndFlush(user);
-        return UserMapper.INSTANCE.toDto(user);
+        return userMapper.toDto(user);
     }
 
     @Override
@@ -61,8 +64,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserResponse> findAll(Integer from, Integer size) {
         log.info("Получение списка всех User");
-        return userRepository.findAll(from == null ? 0 : from, size == null ? Integer.MAX_VALUE : size).stream()
-                .map(UserMapper.INSTANCE::toDto)
+        if (from < 0) throw new RuntimeException("from не может быть меньше 0");
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size);
+        return userRepository.findAll(pageable).stream()
+                .map(userMapper::toDto)
                 .collect(Collectors.toList());
     }
 }

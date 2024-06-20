@@ -43,8 +43,8 @@ public class BookingController {
     @GetMapping
     private List<BookingResponse> getAllUserBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                      @RequestParam(defaultValue = "ALL") String state,
-                                                     @RequestParam(required = false) Integer from,
-                                                     @RequestParam(required = false) Integer size)
+                                                     @RequestParam(defaultValue = "0") Integer from,
+                                                     @RequestParam(defaultValue = "10") Integer size)
             throws NotFoundException, ItemException, StateException {
         return bookingService.getAllUserBookings(userId, state, from, size);
     }
@@ -52,8 +52,8 @@ public class BookingController {
     @GetMapping("/owner")
     private List<BookingResponse> getAllOwnerBookings(@RequestHeader("X-Sharer-User-Id") Long userId,
                                                       @RequestParam(defaultValue = "ALL") String state,
-                                                      @RequestParam(required = false) Integer from,
-                                                      @RequestParam(required = false) Integer size)
+                                                      @RequestParam(defaultValue = "0") Integer from,
+                                                      @RequestParam(defaultValue = "10") Integer size)
             throws NotFoundException, ItemException, StateException {
         return bookingService.getAllOwnerBookings(userId, state, from, size);
     }

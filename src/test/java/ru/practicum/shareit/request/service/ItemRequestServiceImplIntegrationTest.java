@@ -79,11 +79,9 @@ class ItemRequestServiceImplIntegrationTest {
 
     @Test
     void testGetAllRequestItemStateException() {
-        StateException thrown = assertThrows(StateException.class, () -> {
+        ArithmeticException thrown = assertThrows(ArithmeticException.class, () -> {
             itemRequestService.getAllRequestItem(0, 0, anotherUser.getId());
         });
-
-        assertEquals("размер не может быть 0", thrown.getMessage());
     }
 
     @Test

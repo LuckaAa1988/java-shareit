@@ -42,8 +42,8 @@ public class ItemController {
 
     @GetMapping
     public List<ItemResponse> getAllItems(@RequestHeader("X-Sharer-User-Id") Long userId,
-                                          @RequestParam(required = false) Integer from,
-                                          @RequestParam(required = false) Integer size) throws NotFoundException {
+                                          @RequestParam(defaultValue = "0") Integer from,
+                                          @RequestParam(defaultValue = "10") Integer size) throws NotFoundException {
         return itemService.getAllItems(userId, from, size);
     }
 
