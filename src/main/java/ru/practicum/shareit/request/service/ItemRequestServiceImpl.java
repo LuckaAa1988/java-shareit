@@ -1,6 +1,9 @@
 package ru.practicum.shareit.request.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.model.NotFoundException;
 import ru.practicum.shareit.exception.model.StateException;
@@ -23,6 +26,8 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     private final ItemRequestRepository itemRequestRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+    private final ItemRequestMapper itemRequestMapper;
+    private final ItemMapper itemMapper;
 
     @Override
     public ItemRequestResponse addRequestItem(ItemRequestRequest itemRequestRequest, Long authorId)
@@ -31,11 +36,11 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, authorId));
         }
         var author = userRepository.findById(authorId).get();
-        var itemReq = itemRequestRepository.save(ItemRequestMapper.INSTANCE.fromDto(itemRequestRequest, author));
+        var itemReq = itemRequestRepository.save(itemRequestMapper.fromDto(itemRequestRequest, author));
         var items = itemRepository.findAllByItemRequest(itemReq).stream()
-                .map(ItemMapper.INSTANCE::toDto)
+                .map(itemMapper::toDto)
                 .collect(Collectors.toList());
-        return ItemRequestMapper.INSTANCE.toDto(itemReq, items);
+        return itemRequestMapper.toDto(itemReq, items);
     }
 
     @Override
@@ -43,16 +48,16 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         if (notExist(authorId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, authorId));
         }
-        if (size != null && size == 0) {
-            throw new StateException("размер не может быть 0");
-        }
-        var itemReqs = itemRequestRepository.findAll(from == null ? 0 : from, size == null ? Integer.MAX_VALUE : size);
-        var items = itemRepository.findAll();
+        if (from < 0) throw new RuntimeException("from не может быть меньше 0");
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "id");
+        var itemReqs = itemRequestRepository.findAll(pageable);
+        var items = itemRepository.findAllByItemRequestIdNotNull();
         return itemReqs.stream()
                 .filter(ir -> !ir.getAuthor().getId().equals(authorId))
-                .map(ir -> ItemRequestMapper.INSTANCE.toDto(ir, items.stream()
-                        .filter(i -> i.getItemRequest() != null && i.getItemRequest().getId().equals(ir.getId()))
-                        .map(ItemMapper.INSTANCE::toDto).collect(Collectors.toList())))
+                .map(ir -> itemRequestMapper.toDto(ir, items.stream()
+                        .filter(i -> i.getItemRequest().getId().equals(ir.getId()))
+                        .map(itemMapper::toDto).collect(Collectors.toList())))
                 .collect(Collectors.toList());
     }
 
@@ -61,17 +66,14 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         if (notExist(authorId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, authorId));
         }
-        if (size != null && size == 0) {
-            throw new StateException("размер не может быть 0");
-        }
-        var itemReqs = itemRequestRepository.findAllByAuthor(authorId,
-                from == null ? 0 : from,
-                size == null ? Integer.MAX_VALUE : size);
-        var items = itemRepository.findAll();
+        if (from < 0) throw new RuntimeException("from не может быть меньше 0");
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "id");
+        var itemReqs = itemRequestRepository.findAllByAuthorId(authorId, pageable);
+        var items = itemRepository.findAllByItemRequestAuthorId(authorId);
         return itemReqs.stream()
-                .map(ir -> ItemRequestMapper.INSTANCE.toDto(ir, items.stream()
-                        .filter(i -> i.getItemRequest() != null && i.getItemRequest().getId().equals(ir.getId()))
-                        .map(ItemMapper.INSTANCE::toDto).collect(Collectors.toList())))
+                .map(ir -> itemRequestMapper.toDto(ir, items.stream()
+                        .map(itemMapper::toDto).collect(Collectors.toList())))
                 .collect(Collectors.toList());
     }
 
@@ -83,9 +85,9 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         var itemReq = itemRequestRepository.findById(requestId).orElseThrow(
                 () -> new NotFoundException(String.format(Constants.ITEM_NOT_FOUND, requestId)));
         var items = itemRepository.findAllByItemRequest(itemReq).stream()
-                .map(ItemMapper.INSTANCE::toDto)
+                .map(itemMapper::toDto)
                 .collect(Collectors.toList());
-        return ItemRequestMapper.INSTANCE.toDto(itemReq, items);
+        return itemRequestMapper.toDto(itemReq, items);
     }
 
     private boolean notExist(Long userId) {

@@ -2,20 +2,22 @@ package ru.practicum.shareit.item.service;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.booking.util.Status;
 import ru.practicum.shareit.exception.model.AccessDeniedException;
 import ru.practicum.shareit.exception.model.ItemException;
 import ru.practicum.shareit.exception.model.NotFoundException;
-import ru.practicum.shareit.item.dto.CommentRequest;
-import ru.practicum.shareit.item.dto.CommentResponse;
-import ru.practicum.shareit.item.dto.ItemCreate;
-import ru.practicum.shareit.item.dto.ItemResponse;
+import ru.practicum.shareit.item.dto.*;
+import ru.practicum.shareit.item.mapper.CommentMapper;
+import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
@@ -35,6 +37,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static ru.practicum.shareit.booking.repository.BookingSpecification.*;
 
+@ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
 
     @Mock
@@ -47,6 +50,13 @@ class ItemServiceTest {
     private CommentRepository commentRepository;
     @Mock
     private BookingRepository bookingRepository;
+    @Mock
+    private ItemMapper itemMapper;
+    @Mock
+    private BookingMapper bookingMapper;
+    @Mock
+    private CommentMapper commentMapper;
+
     @InjectMocks
     private ItemServiceImpl itemService;
 
@@ -61,10 +71,15 @@ class ItemServiceTest {
     private ItemCreate itemCreateWithRequest;
     private ItemRequest itemRequest;
     private Booking bookingAfter;
+    private ItemResponse itemResponse;
+    private CommentResponse commentResponse;
+    private ItemBookingResponse bookingResponseAfter;
+    private ItemBookingResponse bookingResponseBefore;
+    private ItemResponse itemResponse2;
+    private ItemBookingResponse itemBookingResponse;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
         booker = User.builder().id(2L).name("Booker").email("booker@example.com").build();
         user = User.builder().id(1L).name("Author").email("author@example.com").build();
         item = Item.builder().id(2L).description("Powerful drill").name("Drill").isAvailable(true).user(user).build();
@@ -98,6 +113,11 @@ class ItemServiceTest {
         itemCreate2.setName("Ladder");
         itemCreate2.setIsAvailable(true);
 
+        itemResponse2 = new ItemResponse();
+        itemResponse2.setDescription("Big ladder");
+        itemResponse2.setName("Ladder");
+        itemResponse2.setIsAvailable(true);
+
         itemCreateWithRequest = new ItemCreate();
         itemCreateWithRequest.setDescription("Big ladder");
         itemCreateWithRequest.setName("Ladder");
@@ -106,17 +126,40 @@ class ItemServiceTest {
 
         itemRequest = new ItemRequest();
         itemRequest.setId(1L);
+
+        commentResponse = new CommentResponse();
+        commentResponse.setId(1L);
+        commentResponse.setText("new comment");
+        commentResponse.setAuthorName("Booker");
+
+        bookingResponseAfter = new ItemBookingResponse();
+        bookingResponseAfter.setId(2L);
+
+        bookingResponseBefore = new ItemBookingResponse();
+        bookingResponseBefore.setId(1L);
+
+        itemResponse = new ItemResponse();
+        itemResponse.setId(2L);
+        itemResponse.setDescription("Powerful drill");
+        itemResponse.setName("Drill");
+        itemResponse.setUserId(1L);
+        itemResponse.setIsAvailable(true);
+        itemResponse.setComments(List.of(commentResponse));
+        itemResponse.setRequestId(1L);
+        itemResponse.setLastBooking(bookingResponseBefore);
+        itemResponse.setNextBooking(bookingResponseAfter);
+
+        itemBookingResponse = new ItemBookingResponse();
+        itemBookingResponse.setId(1L);
     }
 
 
     @Test
     void testCreateItem() throws Exception {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(itemRepository.saveAndFlush(any(Item.class))).thenAnswer(invocation -> {
-            Item item = invocation.getArgument(0);
-            item.setId(1L);
-            return item;
-        });
+        when(itemRepository.saveAndFlush(any(Item.class))).thenReturn(item);
+        when(itemMapper.fromDto(any(ItemCreate.class), any(User.class), any())).thenReturn(item);
+        when(itemMapper.toDtoWithBooking(any(Item.class), any(), any(), any())).thenReturn(itemResponse2);
 
         ItemResponse response = itemService.createItem(itemCreate2, user.getId());
 
@@ -130,12 +173,10 @@ class ItemServiceTest {
     @Test
     void testCreateItemWithRequestId() throws Exception {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(itemRepository.saveAndFlush(any(Item.class))).thenAnswer(invocation -> {
-            Item item = invocation.getArgument(0);
-            item.setId(1L);
-            return item;
-        });
+        when(itemRepository.saveAndFlush(any(Item.class))).thenReturn(item);
+        when(itemMapper.fromDto(any(ItemCreate.class), any(User.class), any())).thenReturn(item);
         when(itemRequestRepository.findById(anyLong())).thenReturn(Optional.of(itemRequest));
+        when(itemMapper.toDtoWithBooking(any(Item.class), any(), any(), any())).thenReturn(itemResponse);
 
         ItemResponse response = itemService.createItem(itemCreate1, user.getId());
 
@@ -158,9 +199,9 @@ class ItemServiceTest {
 
     @Test
     void testUpdateItem() throws Exception {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(itemRepository.findById(2L)).thenReturn(Optional.of(item));
         when(itemRepository.saveAndFlush(any(Item.class))).thenReturn(item);
+        when(itemMapper.toDto(any(Item.class))).thenReturn(itemResponse2);
 
         ItemResponse response = itemService.updateItem(itemCreate2, user.getId(), item.getId());
 
@@ -192,8 +233,8 @@ class ItemServiceTest {
 
     @Test
     void testGetItem() throws Exception {
-        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
+        when(itemMapper.toDtoWithBooking(any(Item.class), any(), any(), any())).thenReturn(itemResponse);
 
         ItemResponse response = itemService.getItem(2L,2L);
 
@@ -205,8 +246,9 @@ class ItemServiceTest {
 
     @Test
     void testGetAllItems() throws Exception {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(itemRepository.findAllByUserId(anyLong(), anyInt(), anyInt())).thenReturn(List.of(item));
+        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
+        when(itemRepository.findAllByUserId(anyLong(), any(Pageable.class))).thenReturn(List.of(item));
+        when(itemMapper.toDtoWithBooking(any(Item.class), any(), any(), any())).thenReturn(itemResponse);
 
         List<ItemResponse> responses = itemService.getAllItems(1L,0, 10);
 
@@ -220,10 +262,11 @@ class ItemServiceTest {
     @Test
     void testGetAllItemsWithBookings() throws Exception {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(itemRepository.findAllByUserId(anyLong(), anyInt(), anyInt())).thenReturn(List.of(item));
+        when(itemRepository.findAllByUserId(anyLong(), any(Pageable.class))).thenReturn(List.of(item));
         when(bookingRepository.findAll(any(Specification.class))).thenReturn(List.of(bookingAfter));
         when(bookingRepository.findAll(startDateIsBefore())).thenReturn(List.of(booking));
-
+        when(itemMapper.toDtoWithBooking(any(Item.class), any(), any(), any())).thenReturn(itemResponse);
+        when(bookingMapper.toDtoItemBooking(any(Booking.class))).thenReturn(itemBookingResponse);
 
         List<ItemResponse> responses = itemService.getAllItems(1L,0, 10);
 
@@ -255,6 +298,7 @@ class ItemServiceTest {
     void testSearchItems() throws Exception {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
         when(itemRepository.searchItems("new comment")).thenReturn(List.of(item));
+        when(itemMapper.toDto(item)).thenReturn(itemResponse);
 
         List<ItemResponse> responses = itemService.searchItems("new comment", 1L, 0, 10);
 
@@ -285,8 +329,10 @@ class ItemServiceTest {
     void testAddComment() throws Exception {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
-        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
         when(bookingRepository.findAll(any(Specification.class))).thenReturn(List.of(booking));
+        when(commentMapper.fromDto(any(), any(), any())).thenReturn(comment);
+        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
+        when(commentMapper.toDto(any(Comment.class))).thenReturn(commentResponse);
 
         CommentResponse response = itemService.addComment(commentRequest, booker.getId(), item.getId());
 
@@ -306,9 +352,6 @@ class ItemServiceTest {
     @Test
     void testUserDidntBookItemAddComment() {
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(booker));
-        when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
-        when(commentRepository.save(any(Comment.class))).thenReturn(comment);
-        when(bookingRepository.findAll(any(Specification.class))).thenReturn(Collections.emptyList());
 
         assertThrows(ItemException.class, () -> itemService.addComment(commentRequest, 1L, 2L));
     }

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.practicum.shareit.item.model.Item;
@@ -74,7 +75,7 @@ class ItemRepositoryTest {
         itemRepository.saveAndFlush(item1);
         itemRepository.saveAndFlush(item2);
 
-        List<Item> items = itemRepository.findAllByUserId(user.getId(), 0, 10);
+        List<Item> items = itemRepository.findAllByUserId(user.getId(), PageRequest.of(0, 10));
         assertEquals(2, items.size());
         assertTrue(items.contains(item1));
         assertTrue(items.contains(item2));
@@ -166,8 +167,8 @@ class ItemRepositoryTest {
         itemRepository.saveAndFlush(item1);
         itemRepository.saveAndFlush(item2);
 
-        List<Item> firstPage = itemRepository.findAllByUserId(user.getId(), 0, 1);
-        List<Item> secondPage = itemRepository.findAllByUserId(user.getId(), 1, 1);
+        List<Item> firstPage = itemRepository.findAllByUserId(user.getId(), PageRequest.of(0, 1));
+        List<Item> secondPage = itemRepository.findAllByUserId(user.getId(), PageRequest.of(1, 1));
 
         assertEquals(1, firstPage.size());
         assertEquals(1, secondPage.size());

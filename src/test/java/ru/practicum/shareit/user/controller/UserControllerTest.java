@@ -11,6 +11,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.user.dto.UserRequest;
 import ru.practicum.shareit.user.dto.UserResponse;
 import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.user.mapper.UserMapperImpl;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -31,6 +32,8 @@ class UserControllerTest {
     @MockBean
     UserService userService;
 
+    UserMapper userMapper = new UserMapperImpl();
+
     List<UserResponse> userResponses;
 
 
@@ -46,7 +49,7 @@ class UserControllerTest {
                 .email("bob@example.com")
                 .name("Bob")
                 .build();
-        userResponses = List.of(UserMapper.INSTANCE.toDto(one), UserMapper.INSTANCE.toDto(two));
+        userResponses = List.of(userMapper.toDto(one), userMapper.toDto(two));
     }
 
     @Test
@@ -62,9 +65,9 @@ class UserControllerTest {
 
     @Test
     void testGetAllUsers() throws Exception {
-        when(userService.findAll(0, 0)).thenReturn(userResponses);
+        when(userService.findAll(0, 10)).thenReturn(userResponses);
 
-        mockMvc.perform(get("/users?from=0&size=0"))
+        mockMvc.perform(get("/users?from=0&size=10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$").value(hasSize(2)))
@@ -85,7 +88,7 @@ class UserControllerTest {
         userRequest.setEmail("alice@example.com");
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(userRequest);
-        when(userService.createUser(userRequest)).thenReturn(UserMapper.INSTANCE.toDto(User.builder()
+        when(userService.createUser(userRequest)).thenReturn(userMapper.toDto(User.builder()
                         .id(1L)
                         .email("alice@example.com")
                         .name("Alice")
@@ -106,7 +109,7 @@ class UserControllerTest {
         userRequest.setEmail("NO EMAIL");
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(userRequest);
-        when(userService.createUser(userRequest)).thenReturn(UserMapper.INSTANCE.toDto(User.builder()
+        when(userService.createUser(userRequest)).thenReturn(userMapper.toDto(User.builder()
                 .id(1L)
                 .email("alice@example.com")
                 .name("Alice")
@@ -133,7 +136,7 @@ class UserControllerTest {
         userRequest.setEmail("john.doe@example.com");
         ObjectMapper objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(userRequest);
-        when(userService.updateUser(1L, userRequest)).thenReturn(UserMapper.INSTANCE.toDto(User.builder()
+        when(userService.updateUser(1L, userRequest)).thenReturn(userMapper.toDto(User.builder()
                 .id(1L)
                 .email("john.doe@example.com")
                 .name("John Doe")

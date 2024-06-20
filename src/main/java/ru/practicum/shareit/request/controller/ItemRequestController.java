@@ -26,16 +26,16 @@ public class ItemRequestController {
     }
 
     @GetMapping
-    public List<ItemRequestResponse> getAllOwnerRequestItem(@RequestParam(required = false) Integer from,
-                                                            @RequestParam(required = false) Integer size,
+    public List<ItemRequestResponse> getAllOwnerRequestItem(@RequestParam(defaultValue = "0") Integer from,
+                                                            @RequestParam(defaultValue = "10") Integer size,
                                                             @RequestHeader("X-Sharer-User-Id") Long authorId)
             throws NotFoundException, StateException {
         return itemRequestService.getAllOwnerRequestItem(from, size, authorId);
     }
 
     @GetMapping("/all")
-    public List<ItemRequestResponse> getAllRequestItem(@RequestParam(required = false) Integer from,
-                                                       @RequestParam(required = false) Integer size,
+    public List<ItemRequestResponse> getAllRequestItem(@RequestParam(defaultValue = "0") Integer from,
+                                                       @RequestParam(defaultValue = "10") Integer size,
                                                        @RequestHeader("X-Sharer-User-Id") Long authorId)
             throws NotFoundException, StateException {
         return itemRequestService.getAllRequestItem(from, size, authorId);

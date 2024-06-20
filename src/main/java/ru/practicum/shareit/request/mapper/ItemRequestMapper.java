@@ -11,7 +11,7 @@ import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 
-@Mapper
+@Mapper(componentModel = "spring")
 public interface ItemRequestMapper {
 
     ItemRequestMapper INSTANCE = Mappers.getMapper(ItemRequestMapper.class);

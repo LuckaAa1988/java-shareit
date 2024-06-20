@@ -6,6 +6,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.user.model.User;
@@ -74,10 +77,18 @@ class UserRepositoryTest {
         userRepository.saveAndFlush(user1);
         userRepository.saveAndFlush(user2);
 
-        List<User> users = userRepository.findAll(0, 1);
+        int page = 0 / 1;
+        int size = 1;
+        Pageable pageable = PageRequest.of(page,size, Sort.Direction.DESC, "id");
+
+        List<User> users = userRepository.findAll(pageable).getContent();
         assertEquals(1, users.size());
 
-        List<User> allUsers = userRepository.findAll(0, 10);
+        page = 0 / 2;
+        size = 2;
+        pageable = PageRequest.of(page,size, Sort.Direction.DESC, "id");
+
+        List<User> allUsers = userRepository.findAll(pageable).getContent();
         assertEquals(2, allUsers.size());
     }
 }

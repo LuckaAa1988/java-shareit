@@ -16,6 +16,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static ru.practicum.shareit.booking.repository.BookingSpecification.byBookerId;
+import static ru.practicum.shareit.booking.repository.BookingSpecification.byItemIds;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
@@ -55,7 +57,7 @@ class BookingRepositoryTest {
         bookingRepository.saveAll(List.of(booking1, booking2));
         entityManager.flush();
 
-        List<Booking> bookings = bookingRepository.findAll(booker.getId(), 0, 10);
+        List<Booking> bookings = bookingRepository.findAll(byBookerId(booker.getId()));
         assertEquals(2, bookings.size());
         assertTrue(bookings.contains(booking1));
         assertTrue(bookings.contains(booking2));
@@ -72,7 +74,7 @@ class BookingRepositoryTest {
         bookingRepository.saveAll(List.of(booking1, booking2));
         entityManager.flush();
 
-        List<Booking> bookings = bookingRepository.findAll(List.of(item1.getId(), item2.getId()), 0, 10);
+        List<Booking> bookings = bookingRepository.findAll(byItemIds(List.of(item1.getId(), item2.getId())));
         assertEquals(2, bookings.size());
         assertTrue(bookings.contains(booking1));
         assertTrue(bookings.contains(booking2));

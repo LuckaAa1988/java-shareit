@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.repository;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,8 +13,13 @@ import java.util.List;
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
-    @Query(value = "SELECT * FROM items WHERE user_id = :userId LIMIT :size OFFSET :from", nativeQuery = true)
-    List<Item> findAllByUserId(Long userId, Integer from, Integer size);
+    List<Item> findAllByUserId(Long userId, Pageable pageable);
+
+    List<Item> findAllByUserId(Long userId);
+
+    List<Item> findAllByItemRequestIdNotNull();
+
+    List<Item> findAllByItemRequestAuthorId(Long authorId);
 
     @Query(value = "SELECT i FROM Item i " +
             "WHERE i.isAvailable = true AND (lower(i.name) LIKE %:text% OR lower(i.description) LIKE %:text%)")

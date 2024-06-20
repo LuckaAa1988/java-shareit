@@ -39,8 +39,8 @@ public class UserController {
     }
 
     @GetMapping
-    public List<UserResponse> getAllUsers(@RequestParam(required = false) Integer from,
-                                          @RequestParam(required = false) Integer size) {
+    public List<UserResponse> getAllUsers(@RequestParam(defaultValue = "0") Integer from,
+                                          @RequestParam(defaultValue = "10") Integer size) {
         return userService.findAll(from, size);
     }
 }

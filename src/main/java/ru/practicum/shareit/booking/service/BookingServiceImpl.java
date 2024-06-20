@@ -2,6 +2,9 @@ package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingRequest;
@@ -34,6 +37,7 @@ public class BookingServiceImpl implements BookingService {
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
     private final StateFactory stateFactory;
+    private final BookingMapper bookingMapper;
 
     @Override
     public BookingResponse addBooking(BookingRequest bookingRequest, Long bookerId)
@@ -51,9 +55,8 @@ public class BookingServiceImpl implements BookingService {
             throw new NotFoundException("Нельзя взять в аренду свою вещь.");
         }
         var booker = userRepository.findById(bookerId).get();
-        var booking = bookingRepository.saveAndFlush(
-                BookingMapper.INSTANCE.fromDto(bookingRequest, booker, item, Status.WAITING));
-        return BookingMapper.INSTANCE.toDto(booking);
+        var booking = bookingRepository.saveAndFlush(bookingMapper.fromDto(bookingRequest, booker, item, Status.WAITING));
+        return bookingMapper.toDto(booking);
     }
 
     @Override
@@ -65,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
         if (!booking.getBooker().getId().equals(userId) && !itemUserId.equals(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
         }
-        return BookingMapper.INSTANCE.toDto(booking);
+        return bookingMapper.toDto(booking);
     }
 
     @Override
@@ -97,13 +100,16 @@ public class BookingServiceImpl implements BookingService {
             throws NotFoundException, StateException {
         log.info("Просмотр всех бронирований USER c id {}, с параметром {}",
                 userId, state);
+        if (from < 0) throw new RuntimeException("from не может быть меньше 0");
         if (notExists(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
         }
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "id");
         List<Booking> bookings;
         try {
             StateStrategy strategy = stateFactory.findStrategy(State.valueOf(state));
-            bookings = strategy.findBookings(userId, from, size);
+            bookings = strategy.findBookings(userId, pageable);
         } catch (IllegalArgumentException e) {
             throw new StateException("Unknown state: " + state);
         }
@@ -115,16 +121,19 @@ public class BookingServiceImpl implements BookingService {
             throws NotFoundException, StateException {
         log.info("Просмотр всех бронирований USER c id {}, с параметром {}",
                 userId, state);
+        if (from < 0) throw new RuntimeException("from не может быть меньше 0");
         if (notExists(userId)) {
             throw new NotFoundException(String.format(Constants.USER_NOT_FOUND, userId));
         }
-        var itemIds = itemRepository.findAllByUserId(userId, 0, Integer.MAX_VALUE).stream()
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "id");
+        var itemIds = itemRepository.findAllByUserId(userId).stream()
                 .map(Item::getId)
                 .collect(Collectors.toList());
         List<Booking> bookings;
         try {
             StateStrategy strategy = stateFactory.findStrategy(State.valueOf(state));
-            bookings = strategy.findBookingsByItemIds(itemIds, from, size);
+            bookings = strategy.findBookingsByItemIds(itemIds, pageable);
         } catch (IllegalArgumentException e) {
             throw new StateException("Unknown state: " + state);
         }
@@ -132,7 +141,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private List<BookingResponse> getBookingResponses(List<Booking> bookings) {
-        return bookings.stream().map(BookingMapper.INSTANCE::toDto).collect(Collectors.toList());
+        return bookings.stream().map(bookingMapper::toDto).collect(Collectors.toList());
     }
 
     private boolean notExists(Long userId) {
