@@ -9,7 +9,6 @@ import ru.practicum.shareit.exception.model.ItemException;
 import ru.practicum.shareit.exception.model.NotFoundException;
 import ru.practicum.shareit.exception.model.StateException;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController

@@ -8,7 +8,6 @@ import ru.practicum.shareit.request.dto.ItemRequestRequest;
 import ru.practicum.shareit.request.dto.ItemRequestResponse;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
