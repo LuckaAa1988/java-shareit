@@ -22,7 +22,7 @@ public class ItemController {
     private final ItemService itemService;
 
     @PostMapping
-    public ItemResponse createItem(@RequestBody @Valid ItemCreate itemCreate,
+    public ItemResponse createItem(@RequestBody ItemCreate itemCreate,
                                    @RequestHeader("X-Sharer-User-Id") Long userId) throws NotFoundException {
         return itemService.createItem(itemCreate, userId);
     }
@@ -56,7 +56,7 @@ public class ItemController {
     }
 
     @PostMapping("/{itemId}/comment")
-    public CommentResponse addCommentItem(@RequestBody @Valid CommentRequest commentRequest,
+    public CommentResponse addCommentItem(@RequestBody CommentRequest commentRequest,
                                           @RequestHeader("X-Sharer-User-Id") Long userId,
                                           @PathVariable Long itemId) throws NotFoundException, ItemException {
         return itemService.addComment(commentRequest, userId, itemId);

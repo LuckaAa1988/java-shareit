@@ -20,7 +20,7 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public BookingResponse addBooking(@RequestBody @Valid BookingRequest bookingRequest,
+    public BookingResponse addBooking(@RequestBody BookingRequest bookingRequest,
                                       @RequestHeader("X-Sharer-User-Id") Long bookerId)
             throws NotFoundException, ItemException {
         return bookingService.addBooking(bookingRequest, bookerId);
