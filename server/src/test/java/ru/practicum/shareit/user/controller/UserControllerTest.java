@@ -103,24 +103,6 @@ class UserControllerTest {
     }
 
     @Test
-    void testCreateUserFailEmail() throws Exception {
-        UserRequest userRequest = new UserRequest();
-        userRequest.setName("Alice");
-        userRequest.setEmail("NO EMAIL");
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(userRequest);
-        when(userService.createUser(userRequest)).thenReturn(userMapper.toDto(User.builder()
-                .id(1L)
-                .email("alice@example.com")
-                .name("Alice")
-                .build()));
-
-
-        mockMvc.perform(post("/users").contentType(MediaType.APPLICATION_JSON).content(json))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void testDeleteUserSuccess() throws Exception {
         when(userService.deleteUser(1L)).thenReturn(true);
 

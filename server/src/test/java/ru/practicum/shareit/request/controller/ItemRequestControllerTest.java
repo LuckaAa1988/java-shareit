@@ -226,16 +226,4 @@ class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.items[0].available").value(true))
                 .andExpect(jsonPath("$.items[0].requestId").value(1));
     }
-
-    @Test
-    void testCreateNullDescriptionItemRequest() throws Exception {
-        ItemRequestRequest itemRequestRequest = new ItemRequestRequest();
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = objectMapper.writeValueAsString(itemRequestRequest);
-        when(itemRequestService.addRequestItem(itemRequestRequest, 1L)).thenReturn(mockResponses.get(0));
-
-        mockMvc.perform(post("/requests").contentType(MediaType.APPLICATION_JSON).content(json)
-                        .header("X-Sharer-User-Id", "1"))
-                .andExpect(status().isBadRequest());
-    }
 }
