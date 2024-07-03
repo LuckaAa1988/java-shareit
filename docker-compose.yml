@@ -12,7 +12,7 @@ services:
       - TZ=Europe/Moscow
 
   server:
-    build: /server/.
+    build: ./server
     ports:
       - "9090:9090"
     depends_on:
@@ -25,7 +25,7 @@ services:
       - DB_PORT=5432
       - TZ=Europe/Moscow
   gateway:
-    build: /gateway/.
+    build: ./gateway
     ports:
       - "8080:8080"
     depends_on:
