@@ -23,7 +23,7 @@ public class UserController {
     }
 
     @PostMapping
-    public UserResponse createUser(@RequestBody @Valid UserRequest userRequest) throws NotFoundException {
+    public UserResponse createUser(@RequestBody UserRequest userRequest) throws NotFoundException {
         return userService.createUser(userRequest);
     }
 

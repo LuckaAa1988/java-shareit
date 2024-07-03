@@ -19,7 +19,7 @@ public class ItemRequestController {
     private final ItemRequestService itemRequestService;
 
     @PostMapping
-    public ItemRequestResponse addRequestItem(@RequestBody @Valid ItemRequestRequest itemRequestRequest,
+    public ItemRequestResponse addRequestItem(@RequestBody ItemRequestRequest itemRequestRequest,
                                               @RequestHeader("X-Sharer-User-Id") Long authorId)
             throws NotFoundException {
         return itemRequestService.addRequestItem(itemRequestRequest, authorId);
