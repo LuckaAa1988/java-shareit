@@ -1,6 +1,5 @@
 package ru.practicum.shareit.booking.client;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.booking.dto.BookingRequest;
@@ -14,7 +13,6 @@ public class BookingClient extends BaseClient {
 
     private static final String API_PREFIX = "/bookings";
 
-    @Autowired
     public BookingClient(RestTemplateFactory restTemplateFactory) {
         super(restTemplateFactory.getRestTemplate(API_PREFIX));
     }

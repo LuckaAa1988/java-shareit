@@ -1,6 +1,5 @@
 package ru.practicum.shareit.item.client;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.client.BaseClient;
@@ -15,7 +14,6 @@ public class ItemClient extends BaseClient {
 
     private static final String API_PREFIX = "/items";
 
-    @Autowired
     public ItemClient(RestTemplateFactory restTemplateFactory) {
         super(restTemplateFactory.getRestTemplate(API_PREFIX));
     }
