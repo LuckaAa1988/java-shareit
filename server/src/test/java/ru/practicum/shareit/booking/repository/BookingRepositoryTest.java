@@ -15,7 +15,8 @@ import javax.persistence.PersistenceContext;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static ru.practicum.shareit.booking.repository.BookingSpecification.byBookerId;
 import static ru.practicum.shareit.booking.repository.BookingSpecification.byItemIds;
 

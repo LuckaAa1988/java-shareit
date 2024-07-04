@@ -1,5 +1,6 @@
 package ru.practicum.shareit.item.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
@@ -9,6 +10,7 @@ import lombok.experimental.FieldDefaults;
 public class ItemCreate {
     String name;
     String description;
+    @JsonProperty("available")
     Boolean isAvailable;
     Long requestId;
 }
